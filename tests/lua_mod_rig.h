@@ -139,6 +139,7 @@ struct ModRig {
     std::wstring folder, data;
     std::vector<std::wstring> others_data;  // the world data files of the mods loaded beside it
     std::string id;
+    int edits = 0;  // each edit_main writes a later mtime than the one before (the host compares mtimes only)
     // `also`: more shipped mods loaded beside it, at their default settings (e.g. two class mods sharing a wheel).
     ModRig(const char* mod, const wchar_t* name, const std::map<std::string, std::string>& settings,
            const std::function<void(Fake&)>& world = nullptr, const std::vector<std::string>& also = {})
@@ -218,7 +219,7 @@ struct ModRig {
         const size_t at = lua.find(after);
         REQUIRE(at != std::string::npos);
         lua.insert(at + after.size(), insert);
-        write_later(folder + L"\\main.lua", lua, 1);
+        write_later(folder + L"\\main.lua", lua, ++edits);
         host->check_reload_now();
         REQUIRE_MESSAGE(host->status(id) == "running", host->status(id));
         seconds(1);
